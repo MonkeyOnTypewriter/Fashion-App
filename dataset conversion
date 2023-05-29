@@ -1,0 +1,38 @@
+# This is a script for converting an open images dataset to a pytorch one
+
+# the segmentation labels are found in the metadata folder
+segmentation_labels = ['/m/01940j','/m/01s55n','/m/080hkjn']
+
+segmentations_csv_path = 'fiftyone/open-images-v7/test/labels/segmetations.csv'
+masks_path = 'fiftyone/open-images-v7/test/labels/masks'
+data_path = 'fiftyone/open-images-v7/test/data'
+destination = 'train_data'
+
+import pandas as pd
+
+segs_csv = pd.read_csv(segmentations_csv_path)
+filtered_segs_csv = segs_csv(segmentations_csv_path['LabelName'].isin(segmentation_labels))
+segs_csv = filtered_segs_csv.reset_index(drop=True)
+
+
+import os
+
+
+os.makedirs(destination)
+os.makedirs(f'{destination}/data')
+os.makedirs(f'{destination}/masks')
+
+from PIL import Image
+
+for row in segs_csv.iterrows():
+    ImageID = row['ImageID']
+    image_data = Image.open(f'{data_path}/{ImageID}.jpg')
+    image_data.save(f'{destination}/data/{ImageID}.jpg')
+
+for row in segs_csv.iterrows():
+    MaskPath = row['MaskPath']
+    i = MaskPath[0].upper()
+    image_data = Image.open(f'{masks_path}/i/{MaskPath}')
+    image_data.save(f'{destination}/masks/{MaskPath}')
+
+segs_csv.to_csv(f'destination/segmentations', index=False)
